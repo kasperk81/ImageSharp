@@ -16,6 +16,7 @@ on:
 jobs:
   Build:
     strategy:
+      fail-fast: false
       matrix:
         isARM:
           - ${{ contains(github.event.pull_request.labels.*.name, 'arch:arm32') || contains(github.event.pull_request.labels.*.name, 'arch:arm64') }}

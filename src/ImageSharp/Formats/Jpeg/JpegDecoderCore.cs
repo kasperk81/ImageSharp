@@ -244,7 +244,7 @@ internal sealed class JpegDecoderCore : ImageDecoderCore, IRawJpegData
         Span<byte> markerBuffer = stackalloc byte[2];
 
         // Check for the Start Of Image marker.
-        int bytesRead = stream.Read(markerBuffer);
+        stream.ReadExactly(markerBuffer);
         JpegFileMarker fileMarker = new(markerBuffer[1], 0);
         if (fileMarker.Marker != JpegConstants.Markers.SOI)
         {
@@ -252,7 +252,7 @@ internal sealed class JpegDecoderCore : ImageDecoderCore, IRawJpegData
         }
 
         // Read next marker.
-        bytesRead = stream.Read(markerBuffer);
+        stream.ReadExactly(markerBuffer);
         fileMarker = new JpegFileMarker(markerBuffer[1], (int)stream.Position - 2);
 
         while (fileMarker.Marker != JpegConstants.Markers.EOI || (fileMarker.Marker == JpegConstants.Markers.EOI && fileMarker.Invalid))
@@ -291,11 +291,7 @@ internal sealed class JpegDecoderCore : ImageDecoderCore, IRawJpegData
             }
 
             // Read next marker.
-            bytesRead = stream.Read(markerBuffer);
-            if (bytesRead != 2)
-            {
-                JpegThrowHelper.ThrowInvalidImageContentException("Not enough data to read marker");
-            }
+            stream.ReadExactly(markerBuffer);
 
             fileMarker = new JpegFileMarker(markerBuffer[1], 0);
         }
@@ -318,7 +314,7 @@ internal sealed class JpegDecoderCore : ImageDecoderCore, IRawJpegData
         Span<byte> markerBuffer = stackalloc byte[2];
 
         // Check for the Start Of Image marker.
-        stream.Read(markerBuffer);
+        stream.ReadExactly(markerBuffer);
         JpegFileMarker fileMarker = new(markerBuffer[1], 0);
         if (fileMarker.Marker != JpegConstants.Markers.SOI)
         {
@@ -814,7 +810,7 @@ internal sealed class JpegDecoderCore : ImageDecoderCore, IRawJpegData
         {
             this.hasExif = true;
             byte[] profile = new byte[remaining];
-            stream.Read(profile, 0, remaining);
+            stream.ReadExactly(profile, 0, remaining);
 
             if (this.exifData is null)
             {
@@ -845,7 +841,7 @@ internal sealed class JpegDecoderCore : ImageDecoderCore, IRawJpegData
             {
                 this.hasXmp = true;
                 byte[] profile = new byte[remaining];
-                stream.Read(profile, 0, remaining);
+                stream.ReadExactly(profile, 0, remaining);
 
                 if (this.xmpData is null)
                 {
@@ -881,14 +877,14 @@ internal sealed class JpegDecoderCore : ImageDecoderCore, IRawJpegData
         }
 
         Span<byte> identifier = stackalloc byte[icclength];
-        stream.Read(identifier);
+        stream.ReadExactly(identifier);
         remaining -= icclength; // We have read it by this point
 
         if (ProfileResolver.IsProfile(identifier, ProfileResolver.IccMarker))
         {
             this.hasIcc = true;
             byte[] profile = new byte[remaining];
-            stream.Read(profile, 0, remaining);
+            stream.ReadExactly(profile, 0, remaining);
 
             if (this.iccData is null)
             {
@@ -927,7 +923,7 @@ internal sealed class JpegDecoderCore : ImageDecoderCore, IRawJpegData
         if (ProfileResolver.IsProfile(temp, ProfileResolver.AdobePhotoshopApp13Marker))
         {
             Span<byte> blockDataSpan = remaining <= 128 ? stackalloc byte[remaining] : new byte[remaining];
-            stream.Read(blockDataSpan);
+            stream.ReadExactly(blockDataSpan);
 
             while (blockDataSpan.Length > 12)
             {
@@ -1294,7 +1290,7 @@ internal sealed class JpegDecoderCore : ImageDecoderCore, IRawJpegData
                 JpegThrowHelper.ThrowBadQuantizationTableIndex(quantTableIndex);
             }
 
-            IJpegComponent component = decodingComponentType is ComponentType.Huffman ?
+            JpegComponent component = decodingComponentType is ComponentType.Huffman ?
                         new JpegComponent(this.configuration.MemoryAllocator, this.Frame, componentId, h, v, quantTableIndex, i) :
                         new ArithmeticDecodingComponent(this.configuration.MemoryAllocator, this.Frame, componentId, h, v, quantTableIndex, i);
 
@@ -1473,7 +1469,7 @@ internal sealed class JpegDecoderCore : ImageDecoderCore, IRawJpegData
 
             this.Frame.ComponentOrder[i / 2] = (byte)componentIndex;
 
-            IJpegComponent component = this.Frame.Components[componentIndex];
+            JpegComponent component = this.Frame.Components[componentIndex];
 
             // 1 byte: Huffman table selectors.
             // 4 bits - dc

@@ -160,7 +160,7 @@ public sealed class Image<TPixel> : Image
     /// <summary>
     /// Gets the root frame.
     /// </summary>
-    private IPixelSource<TPixel> PixelSourceUnsafe => this.frames.RootFrameUnsafe;
+    private ImageFrame<TPixel> PixelSourceUnsafe => this.frames.RootFrameUnsafe;
 
     /// <summary>
     /// Gets or sets the pixel at the specified position.

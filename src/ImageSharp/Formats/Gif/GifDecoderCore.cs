@@ -398,7 +398,7 @@ internal sealed class GifDecoderCore : ImageDecoderCore
             using IMemoryOwner<byte> commentsBuffer = this.memoryAllocator.Allocate<byte>(length);
             Span<byte> commentsSpan = commentsBuffer.GetSpan();
 
-            stream.Read(commentsSpan);
+            stream.ReadExactly(commentsSpan);
             string commentPart = GifConstants.Encoding.GetString(commentsSpan);
             stringBuilder.Append(commentPart);
         }
@@ -429,7 +429,7 @@ internal sealed class GifDecoderCore : ImageDecoderCore
             // Read and store the local color table. We allocate the maximum possible size and slice to match.
             int length = this.currentLocalColorTableSize = this.imageDescriptor.LocalColorTableSize * 3;
             this.currentLocalColorTable ??= this.configuration.MemoryAllocator.Allocate<byte>(768, AllocationOptions.Clean);
-            stream.Read(this.currentLocalColorTable.GetSpan()[..length]);
+            stream.ReadExactly(this.currentLocalColorTable.GetSpan()[..length]);
         }
 
         Span<byte> rawColorTable = default;
@@ -631,7 +631,7 @@ internal sealed class GifDecoderCore : ImageDecoderCore
             // Read and store the local color table. We allocate the maximum possible size and slice to match.
             int length = this.currentLocalColorTableSize = this.imageDescriptor.LocalColorTableSize * 3;
             this.currentLocalColorTable ??= this.configuration.MemoryAllocator.Allocate<byte>(768, AllocationOptions.Clean);
-            stream.Read(this.currentLocalColorTable.GetSpan()[..length]);
+            stream.ReadExactly(this.currentLocalColorTable.GetSpan()[..length]);
         }
 
         // Skip the frame indices. Pixels length + mincode size.
@@ -766,7 +766,7 @@ internal sealed class GifDecoderCore : ImageDecoderCore
 
                 // Read the global color table data from the stream and preserve it in the gif metadata
                 Span<byte> globalColorTableSpan = this.globalColorTable.GetSpan();
-                stream.Read(globalColorTableSpan);
+                stream.ReadExactly(globalColorTableSpan);
 
                 Color[] colorTable = new Color[this.logicalScreenDescriptor.GlobalColorTableSize];
                 ReadOnlySpan<Rgb24> rgbTable = MemoryMarshal.Cast<byte, Rgb24>(globalColorTableSpan);

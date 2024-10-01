@@ -482,7 +482,7 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
 
                         Span<byte> run = bytesToRead <= 128 ? scratchBuffer[..bytesToRead] : new byte[bytesToRead];
 
-                        stream.Read(run);
+                        stream.ReadExactly(run);
 
                         int idx = 0;
                         for (int i = 0; i < max; i++)
@@ -588,7 +588,7 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
 
                         Span<byte> run = length <= 128 ? scratchBuffer[..length] : new byte[length];
 
-                        stream.Read(run);
+                        stream.ReadExactly(run);
 
                         run.CopyTo(buffer[count..]);
 
@@ -670,7 +670,7 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
 
                         Span<byte> run = length3 <= 128 ? scratchBuffer[..length3] : new byte[length3];
 
-                        stream.Read(run);
+                        stream.ReadExactly(run);
 
                         run.CopyTo(buffer[(uncompressedPixels * 3)..]);
 
@@ -828,7 +828,11 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
         for (int y = 0; y < height; y++)
         {
             int newY = Invert(y, height, inverted);
-            if (stream.Read(rowSpan) == 0)
+            try
+            {
+                stream.ReadExactly(rowSpan);
+            }
+            catch
             {
                 BmpThrowHelper.ThrowInvalidImageContentException("Could not read enough data for a pixel row!");
             }
@@ -878,7 +882,11 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
             for (int y = 0; y < height; y++)
             {
                 int newY = Invert(y, height, inverted);
-                if (stream.Read(rowSpan) == 0)
+                try
+                {
+                    stream.ReadExactly(rowSpan);
+                }
+                catch
                 {
                     BmpThrowHelper.ThrowInvalidImageContentException("Could not read enough data for a pixel row!");
                 }
@@ -984,7 +992,11 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
 
         for (int y = 0; y < height; y++)
         {
-            if (stream.Read(bufferSpan) == 0)
+            try
+            {
+                stream.ReadExactly(bufferSpan);
+            }
+            catch
             {
                 BmpThrowHelper.ThrowInvalidImageContentException("Could not read enough data for a pixel row!");
             }
@@ -1043,7 +1055,11 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
 
         for (int y = 0; y < height; y++)
         {
-            if (stream.Read(rowSpan) == 0)
+            try
+            {
+                stream.ReadExactly(rowSpan);
+            }
+            catch
             {
                 BmpThrowHelper.ThrowInvalidImageContentException("Could not read enough data for a pixel row!");
             }
@@ -1076,7 +1092,11 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
 
         for (int y = 0; y < height; y++)
         {
-            if (stream.Read(rowSpan) == 0)
+            try
+            {
+                stream.ReadExactly(rowSpan);
+            }
+            catch
             {
                 BmpThrowHelper.ThrowInvalidImageContentException("Could not read enough data for a pixel row!");
             }
@@ -1117,7 +1137,11 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
         // actually a BGRA image, and change tactics accordingly.
         for (int y = 0; y < height; y++)
         {
-            if (stream.Read(rowSpan) == 0)
+            try
+            {
+                stream.ReadExactly(rowSpan);
+            }
+            catch
             {
                 BmpThrowHelper.ThrowInvalidImageContentException("Could not read enough data for a pixel row!");
             }
@@ -1153,7 +1177,11 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
         {
             for (int y = 0; y < height; y++)
             {
-                if (stream.Read(rowSpan) == 0)
+                try
+                {
+                    stream.ReadExactly(rowSpan);
+                }
+                catch
                 {
                     BmpThrowHelper.ThrowInvalidImageContentException("Could not read enough data for a pixel row!");
                 }
@@ -1174,7 +1202,11 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
         // Slow path. We need to set each alpha component value to fully opaque.
         for (int y = 0; y < height; y++)
         {
-            if (stream.Read(rowSpan) == 0)
+            try
+            {
+                stream.ReadExactly(rowSpan);
+            }
+            catch
             {
                 BmpThrowHelper.ThrowInvalidImageContentException("Could not read enough data for a pixel row!");
             }
@@ -1238,7 +1270,11 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
 
         for (int y = 0; y < height; y++)
         {
-            if (stream.Read(bufferSpan) == 0)
+            try
+            {
+                stream.ReadExactly(bufferSpan);
+            }
+            catch
             {
                 BmpThrowHelper.ThrowInvalidImageContentException("Could not read enough data for a pixel row!");
             }
@@ -1373,7 +1409,7 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
             if (this.infoHeader.Compression == BmpCompression.BitFields)
             {
                 Span<byte> bitfieldsBuffer = stackalloc byte[12];
-                stream.Read(bitfieldsBuffer);
+                stream.ReadExactly(bitfieldsBuffer);
                 Span<byte> data = bitfieldsBuffer;
                 this.infoHeader.RedMask = BinaryPrimitives.ReadInt32LittleEndian(data[..4]);
                 this.infoHeader.GreenMask = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(4, 4));
@@ -1382,7 +1418,7 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
             else if (this.infoHeader.Compression == BmpCompression.BI_ALPHABITFIELDS)
             {
                 Span<byte> bitfieldsBuffer = stackalloc byte[16];
-                stream.Read(bitfieldsBuffer);
+                stream.ReadExactly(bitfieldsBuffer);
                 Span<byte> data = bitfieldsBuffer;
                 this.infoHeader.RedMask = BinaryPrimitives.ReadInt32LittleEndian(data[..4]);
                 this.infoHeader.GreenMask = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(4, 4));
@@ -1425,7 +1461,7 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
                 long streamPosition = stream.Position;
                 byte[] iccProfileData = new byte[this.infoHeader.ProfileSize];
                 stream.Position = infoHeaderStart + this.infoHeader.ProfileData;
-                stream.Read(iccProfileData);
+                stream.ReadExactly(iccProfileData);
                 this.metadata.IccProfile = new IccProfile(iccProfileData);
                 stream.Position = streamPosition;
             }
@@ -1589,7 +1625,11 @@ internal sealed class BmpDecoderCore : ImageDecoderCore
 
             palette = new byte[colorMapSizeBytes];
 
-            if (stream.Read(palette, 0, colorMapSizeBytes) == 0)
+            try
+            {
+                stream.ReadExactly(palette, 0, colorMapSizeBytes);
+            }
+            catch
             {
                 BmpThrowHelper.ThrowInvalidImageContentException("Could not read enough data for the palette!");
             }

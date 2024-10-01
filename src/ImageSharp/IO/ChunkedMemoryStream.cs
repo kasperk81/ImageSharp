@@ -432,7 +432,7 @@ internal sealed class ChunkedMemoryStream : Stream
 
         this.readChunk = this.memoryChunk;
         this.readOffset = 0;
-        this.Read(copy, 0, length);
+        this.ReadExactly(copy, 0, length);
 
         this.readChunk = backupReadChunk;
         this.readOffset = backupReadOffset;

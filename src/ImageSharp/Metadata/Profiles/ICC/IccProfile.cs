@@ -155,9 +155,9 @@ public sealed class IccProfile : IDeepCloneable<IccProfile>
         }
 
         return arrayValid &&
-               Enum.IsDefined(typeof(IccColorSpaceType), this.Header.DataColorSpace) &&
-               Enum.IsDefined(typeof(IccColorSpaceType), this.Header.ProfileConnectionSpace) &&
-               Enum.IsDefined(typeof(IccRenderingIntent), this.Header.RenderingIntent) &&
+               Enum.IsDefined<IccColorSpaceType>(this.Header.DataColorSpace) &&
+               Enum.IsDefined<IccColorSpaceType>(this.Header.ProfileConnectionSpace) &&
+               Enum.IsDefined<IccRenderingIntent>(this.Header.RenderingIntent) &&
                this.Header.Size is >= minSize and < maxSize;
     }
 
